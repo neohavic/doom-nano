@@ -88,26 +88,24 @@ class Adafruit_SSD1306 {
 
   ~Adafruit_SSD1306(void) = default;
 
-  bool      begin(uint8_t switchvcc=SSD1306_SWITCHCAPVCC,
-                 uint8_t i2caddr=0);
-  void         display(void);
-  void         clearDisplay(void);
-  void         invertDisplay(bool i);
-  void         drawPixel(int16_t x, int16_t y, uint16_t color);
+  bool begin(uint8_t switchvcc=SSD1306_SWITCHCAPVCC, uint8_t i2caddr=0);
+  void display(void);
+  void clearDisplay(void);
+  void invertDisplay(bool i);
+  void drawPixel(int16_t x, int16_t y, uint16_t color);
   void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-  bool      getPixel(int16_t x, int16_t y);
-  uint8_t     *getBuffer(void);
+  bool getPixel(int16_t x, int16_t y);
+  uint8_t *getBuffer(void);
   void clearRect(uint8_t, uint8_t, uint8_t, uint8_t);
   void drawBitmap(int16_t x, int16_t y, const uint8_t bitmap[], int16_t w, int16_t h, uint16_t color);
 
  private:
-  void         drawFastVLineInternal(int16_t x, int16_t y, int16_t h,
-                 uint16_t color);
-  void         ssd1306_command1(uint8_t c);
-  void         ssd1306_commandList(const uint8_t *c, uint8_t n);
+  void drawFastVLineInternal(int16_t x, int16_t y, int16_t h, uint16_t color);
+  void ssd1306_command1(uint8_t c);
+  void ssd1306_commandList(const uint8_t *c, uint8_t n);
 
-  uint8_t     buffer[WIDTH * ((HEIGHT + 7) / 8)];
-  int8_t       i2caddr, vccstate, page_end;
+  uint8_t buffer[WIDTH * ((HEIGHT + 7) / 8)];
+  int8_t  i2caddr, vccstate, page_end;
 };
 
 template class Adafruit_SSD1306<SCREEN_WIDTH, SCREEN_HEIGHT>;

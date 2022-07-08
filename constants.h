@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #ifndef _constants_h
 #define _constants_h
 

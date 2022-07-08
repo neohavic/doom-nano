@@ -5,7 +5,9 @@
 #include "entities.h"
 #include "types.h"
 #include "display.h"
-#include "sound.h"
+//#include "sound.h"
+#include <Arduboy2.h>
+#include <Arduboy2Core.h>
 
 // Useful macros
 #define swap(a, b)            do { typeof(a) temp = a; a = b; b = temp; } while (0)
@@ -16,6 +18,7 @@ uint8_t scene = INTRO;
 bool exit_scene = false;
 bool invert_screen = false;
 uint8_t flash_screen = 0;
+Arduboy2 display;
 
 // game
 // player and entities
@@ -26,9 +29,49 @@ uint8_t num_entities = 0;
 uint8_t num_static_entities = 0;
 
 void setup(void) {
+  display.begin();
+  display.boot();
+ 
+  // This clears the display. (The screen buffer will be all zeros)
+  // It may not be needed if something clears the display later on but
+  // "garbage" will be displayed if systemButtons() is used without it.
+  display.display();
+ 
+  // flashlight() or safeMode() should always be included to provide
+  // a method of recovering from the bootloader "magic key" problem.
+  display.flashlight();
+//  display..safeMode();
+ 
+  // This allows sound to be turned on or muted. If the sketch provides
+  // its own way of toggling sound, or doesn't produce any sound, this
+  // function may not be required.
+  display.systemButtons();
+ 
+  // This is required to initialize the speaker. It's not needed if
+  // the sketch doesn't produce any sounds.
+  display.audio.begin();
+ 
+  // This displays the boot logo sequence but note that the logo can
+  // be suppressed by the user, by pressing the RIGHT button or using
+  // a system EEPROM setting. If not removed entirely, an alternative
+  // bootLogo...() function may save some memory.
+  display.bootLogo();
+//  arduboy.bootLogoCompressed();
+//  arduboy.bootLogoSpritesSelfMasked();
+//  arduboy.bootLogoSpritesOverwrite();
+//  arduboy.bootLogoSpritesBSelfMasked();
+//  arduboy.bootLogoSpritesBOverwrite();
+//  arduboy.bootLogoText();
+ 
+  // Wait for all buttons to be released, in case a pressed one might
+  // cause problems by being acted upon when the actual sketch code
+  // starts. If neither systemButtons() nor bootLogo() is kept, this
+  // function isn't required.
+  display.waitNoButtons();
+  
   setupDisplay();
   input_setup();
-  sound_init();
+  //sound_init();
 }
 
 // Jump to another scene
@@ -169,7 +212,7 @@ UID detectCollision(const uint8_t level[], Coords *pos, double relative_x, doubl
   uint8_t block = getBlockAt(level, round_x, round_y);
 
   if (block == E_WALL) {
-    playSound(hit_wall_snd, HIT_WALL_SND_LEN);
+    //playSound(hit_wall_snd, HIT_WALL_SND_LEN);
     return create_uid(block, round_x, round_y);
   }
 
@@ -205,7 +248,7 @@ UID detectCollision(const uint8_t level[], Coords *pos, double relative_x, doubl
 
 // Shoot
 void fire() {
-  playSound(shoot_snd, SHOOT_SND_LEN);
+  //playSound(shoot_snd, SHOOT_SND_LEN);
 
   for (uint8_t i = 0; i < num_entities; i++) {
     // Shoot only ALIVE enemies
@@ -354,7 +397,7 @@ void updateEntities(const uint8_t level[]) {
       case E_MEDIKIT: {
           if (entity[i].distance < ITEM_COLLIDER_DIST) {
             // pickup
-            playSound(medkit_snd, MEDKIT_SND_LEN);
+            //playSound(medkit_snd, MEDKIT_SND_LEN);
             entity[i].state = S_HIDDEN;
             player.health = min(100, player.health + 50);
             updateHud();
@@ -366,7 +409,7 @@ void updateEntities(const uint8_t level[]) {
       case E_KEY: {
           if (entity[i].distance < ITEM_COLLIDER_DIST) {
             // pickup
-            playSound(get_key_snd, GET_KEY_SND_LEN);
+            //playSound(get_key_snd, GET_KEY_SND_LEN);
             entity[i].state = S_HIDDEN;
             player.keys++;
             updateHud();
@@ -645,8 +688,8 @@ void renderHud() {
 
 // Render values for the HUD
 void updateHud() {
-  display.clearRect(12, 58, 15, 6);
-  display.clearRect(50, 58, 5, 6);
+  display.fillRect(12, 58, 15, 6);
+  display.fillRect(50, 58, 5, 6);
 
   drawText(12, 58, player.health);
   drawText(50, 58, player.keys);
@@ -654,7 +697,7 @@ void updateHud() {
 
 // Debug stats
 void renderStats() {
-  display.clearRect(58, 58, 70, 6);
+  display.fillRect(58, 58, 70, 6);
   drawText(114, 58, int(getActualFps()));
   drawText(82, 58, num_entities);
   // drawText(94, 58, freeMemory());
@@ -686,7 +729,7 @@ void loopIntro() {
 
 void loopGamePlay() {
   bool gun_fired = false;
-  bool walkSoundToggle = false;
+  //bool walkSoundToggle = false;
   uint8_t gun_pos = 0;
   double rot_speed;
   double old_dir_x;
@@ -702,11 +745,11 @@ void loopGamePlay() {
 
     // Clear only the 3d view
     memset(display_buf, 0, SCREEN_WIDTH * (RENDER_HEIGHT / 8));
-
+    /*
     #ifdef SNES_CONTROLLER
     getControllerData();
     #endif
-
+*/
     // If the player is alive
     if (player.health > 0) {
       // Player speed
@@ -741,7 +784,7 @@ void loopGamePlay() {
       }
 
       view_height = abs(sin((double) millis() * JOGGING_SPEED)) * 6 * jogging;
-
+/*
       if(view_height > 5.9) {
         if(sound == false) {
           if(walkSoundToggle) {
@@ -753,6 +796,7 @@ void loopGamePlay() {
           }
         }
       }
+*/
       // Update gun
       if (gun_pos > GUN_TARGET_POS) {
         // Right after fire
@@ -819,7 +863,7 @@ void loopGamePlay() {
     }
 
     // Draw the frame
-    display.invertDisplay(invert_screen);
+    Arduboy2Core::invert(invert_screen);
     display.display();
 
     // Exit routine
